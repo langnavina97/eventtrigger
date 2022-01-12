@@ -1,0 +1,27 @@
+{
+  "name": "eventtrigger",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/langnavina97/eventtrigger.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/langnavina97/eventtrigger/issues"
+  },
+  "homepage": "https://github.com/langnavina97/eventtrigger#readme",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.0.0",
+    "dotenv": "^11.0.0",
+    "ganache-cli": "^6.12.2",
+    "solc": "^0.8.11",
+    "truffle": "^5.4.27",
+    "web3": "^1.6.1"
+  }
+}
