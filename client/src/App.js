@@ -3,10 +3,13 @@ import ItemManagerContract from "./contracts/ItemManager.json";
 import ItemContract from "./contracts/Item.json";
 import getWeb3 from "./getWeb3";
 
-import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import BTable from 'react-bootstrap/Table';
+import { useTable } from 'react-table'
+import { forEach } from "lodash";
 
 class App extends Component {
-  state = { loaded: false, cost: 0, itemName: "example_1" };
+  state = { loaded: false, cost: 0, itemName: "example_1", itemList: "" };
 
   componentDidMount = async () => {
     try {
@@ -53,37 +56,56 @@ class App extends Component {
 
   handleSubmit = async () => {
     const { cost, itemName } = this.state;
-    console.log("test")
-    console.log(this.itemManager, itemName, cost);
-    console.log(this.accounts[0]);
+    //console.log(this.itemManager, itemName, cost);
+    //console.log(this.accounts[0]);
     let result = await this.itemManager.methods.createItem(itemName, cost).send({ from: this.accounts[0] });
-    console.log(result);
     alert("Send " + cost + " Wei to " + result.events.SupplyChainStep.returnValues._itemAddress);
   }
 
   listenToPaymentEvent = () => {
     let self = this;
     this.itemManager.events.SupplyChainStep().on("data", async function (evt) {
+      if (evt.returnValues._step == 1) {
+        let item = await self.itemManager.methods.items(evt.returnValues._itemIndex).call();
+        console.log(item);
+        alert("Item " + item._identifier + " was paid, deliver it now!");
+      };
       console.log(evt);
-      let itemObj = self.itemManager.methods.items(evt.returnValues._itemIndex).call();
-      console.log(itemObj);
-      alert("Item " + itemObj._identifier + " was paid, deliver it now!")
-    })
+    });
   }
 
+  getItems = async () => {
+    let numberOfItems = await this.itemManager.methods.itemIndex().call()
+    let res = "";
+    for (let i = 0; i < numberOfItems; i++) {
+      let result = await this.itemManager.methods.items(i).call();
+
+
+      res = res + "\n " + result._identifier + "         ,         " + result._itemPrice + "         ,         " + result._state + "    \n\n\n\n";
+      console.log(res);
+      this.setState({ itemList: res });
+    }
+  }
 
   render() {
     if (!this.state.loaded) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
+
     return (
       <div className="App">
         <h1>Event Trigger / Supply Chain Example</h1>
         <h2>Items</h2>
+
         <h2>Add Items</h2>
         Cost in Wei: <input type="text" name="cost" value={this.state.cost} onChange={this.handleInputChange} />
         Item Identifier: <input type="text" name="itemName" value={this.state.itemName} onChange={this.handleInputChange} />
         <button type="button" onClick={this.handleSubmit}>Create new Item</button>
+        <button type="button" onClick={this.getItems}>Get list</button>
+        <div>
+          Name   Price   State
+          {this.state.itemList.split('\n').map((it, i) => <div key={'x' + i}>{it}</div>)}
+        </div>
       </div>
     );
   }
